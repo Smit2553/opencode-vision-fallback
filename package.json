@@ -1,0 +1,33 @@
+{
+  "name": "opencode-vision-fallback",
+  "version": "0.1.0",
+  "description": "Outgoing-only image descriptions for text-only models in OpenCode V2",
+  "type": "module",
+  "main": "index.js",
+  "exports": { ".": "./index.js" },
+  "files": ["index.js", "fallback.js", "connection.js", "vision.js", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Smit2553/opencode-vision-fallback.git"
+  },
+  "homepage": "https://github.com/Smit2553/opencode-vision-fallback#readme",
+  "bugs": {
+    "url": "https://github.com/Smit2553/opencode-vision-fallback/issues"
+  },
+  "keywords": ["opencode", "plugin", "vision", "image"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "prepack": "npm run check"
+  },
+  "peerDependencies": { "@opencode/plugin": "2.0.24" },
+  "dependencies": { "@opencode/ai": "2.0.24" },
+  "devDependencies": {
+    "@opencode/plugin": "2.0.24",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3"
+  }
+}
