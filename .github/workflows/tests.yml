@@ -63,7 +63,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
-          registry-url: "https://registry.npmjs.org"
           cache: npm
       - name: Check if package version is already published
         id: check
@@ -87,16 +86,9 @@ jobs:
       - name: Upgrade npm for OIDC Trusted Publishing support
         if: steps.check.outputs.published == 'false'
         run: npm install -g npm@latest --ignore-scripts --no-audit
-      - name: Publish to npm with provenance
+      - name: Publish to npm via Trusted Publisher (OIDC)
         if: steps.check.outputs.published == 'false'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            unset NODE_AUTH_TOKEN
-            npm config delete //registry.npmjs.org/:_authToken || true
-          fi
-          npm publish --provenance --access public
+        run: npm publish --provenance --access public
       - name: Create GitHub Release and tag
         if: steps.check.outputs.published == 'false'
         env:
