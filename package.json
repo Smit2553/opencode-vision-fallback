@@ -1,11 +1,14 @@
 {
-  "name": "opencode-vision-fallback",
+  "name": "@smit2553/opencode-vision-fallback",
   "version": "0.1.0",
   "description": "Outgoing-only image descriptions for text-only models in OpenCode V2",
   "type": "module",
   "main": "index.js",
   "exports": { ".": "./index.js" },
   "files": ["index.js", "fallback.js", "connection.js", "vision.js", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md"],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -46,4 +46,70 @@ jobs:
           npm install --prefix "$sdk_dir" --ignore-scripts --no-audit @opencode/sdk@2.0.24
           tarball=$(npm pack --ignore-scripts --pack-destination "$sdk_dir")
           npm install --prefix "$sdk_dir" --ignore-scripts --no-audit "$sdk_dir/$tarball"
-          node scripts/runtime-smoke.mjs "$sdk_dir" "$sdk_dir/node_modules/opencode-vision-fallback"
+          node scripts/runtime-smoke.mjs "$sdk_dir" "$sdk_dir/node_modules/@smit2553/opencode-vision-fallback"
+
+  release:
+    needs: [test, runtime-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+      - name: Check if package version is already published
+        id: check
+        run: |
+          pkg_name=$(node -p "require('./package.json').name")
+          pkg_version=$(node -p "require('./package.json').version")
+          echo "name=$pkg_name" >> "$GITHUB_OUTPUT"
+          echo "version=$pkg_version" >> "$GITHUB_OUTPUT"
+          if npm view "${pkg_name}@${pkg_version}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "${pkg_name}@${pkg_version} is already published on npm; skipping."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "${pkg_name}@${pkg_version} is a new version; proceeding with release."
+          fi
+      - name: Install dependencies and verify checks
+        if: steps.check.outputs.published == 'false'
+        run: |
+          npm ci --ignore-scripts
+          npm run check
+      - name: Upgrade npm for OIDC Trusted Publishing support
+        if: steps.check.outputs.published == 'false'
+        run: npm install -g npm@latest --ignore-scripts --no-audit
+      - name: Publish to npm with provenance
+        if: steps.check.outputs.published == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            unset NODE_AUTH_TOKEN
+            npm config delete //registry.npmjs.org/:_authToken || true
+          fi
+          npm publish --provenance --access public
+      - name: Create GitHub Release and tag
+        if: steps.check.outputs.published == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.check.outputs.version }}
+        run: |
+          tarball=$(npm pack --ignore-scripts)
+          if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release create "v${VERSION}" "$tarball" \
+              --target "${GITHUB_SHA}" \
+              --title "v${VERSION}" \
+              --generate-notes
+          else
+            gh release upload "v${VERSION}" "$tarball" --clobber
+          fi
+

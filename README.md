@@ -12,8 +12,7 @@ forwarded to a text-only model.
 
 ## Status and requirements
 
-- Initial public release (`0.1.0`). Install from a local clone of this repository
-  (not yet published to npm).
+- Published on npm as [`@smit2553/opencode-vision-fallback`](https://www.npmjs.com/package/@smit2553/opencode-vision-fallback).
 - OpenCode **V2**, verified against official V2 docs and `@opencode/plugin`,
   `@opencode/client`, and `@opencode/ai` **2.0.24**. V1 plugins/API are incompatible.
 - Node.js 22+ for development/tests; the plugin runs in OpenCode's server runtime.
@@ -25,27 +24,16 @@ forwarded to a text-only model.
 
 ## Installation
 
-Clone this repository to a directory **outside watched `.opencode/` or
-global plugin directories**:
-
-```sh
-git clone https://github.com/Smit2553/opencode-vision-fallback.git
-cd opencode-vision-fallback
-npm ci --ignore-scripts
-npm run check
-```
-
-Merge an entry into the `plugins` array of `opencode.json(c)`. Preserve
-unrelated entries and settings. Use an absolute directory path; relative paths
-resolve from the declaring config. Do not enable multiple vision-fallback
-plugins in the same runtime.
+Add `@smit2553/opencode-vision-fallback` to the `plugins` array of `opencode.json(c)`.
+Preserve unrelated entries and settings, and do not enable multiple
+vision-fallback plugins in the same runtime:
 
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
   "plugins": [
     {
-      "package": "/path/to/opencode-vision-fallback",
+      "package": "@smit2553/opencode-vision-fallback",
       "options": {
         "model": { "providerID": "vision-gateway", "id": "vision-alias" },
         "timeoutMs": 90000,
@@ -58,6 +46,11 @@ plugins in the same runtime.
   ]
 }
 ```
+
+To run from a local checkout instead (for development or testing), clone this
+repository outside watched `.opencode/` or global plugin directories, run
+`npm ci --ignore-scripts && npm run check`, and set `"package"` to the absolute
+checkout path (`/path/to/opencode-vision-fallback`).
 
 `options` are **this plugin's options**, not new OpenCode root configuration
 fields. `model` is required; there is no default provider or model. Use the
